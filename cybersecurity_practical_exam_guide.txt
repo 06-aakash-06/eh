@@ -1,0 +1,297 @@
+CYBERSECURITY PRACTICAL EXAM GUIDE
+Beginner-friendly revision manual | 16 tools | Commands + GUI workflows
+
+1. KALI LINUX VM AND NETWORKING
+
+Essential commands
+    whoami
+    uname -a
+    ip -br addr
+    ip addr
+    ip route
+    cat /etc/resolv.conf
+    ping -c 3 1.1.1.1
+    ping -c 3 example.com
+    sudo apt update
+
+Worked example from the user's Kali VM
+    eth0: 10.0.2.15/24
+
+Interpretation:
+- IPv4 address: 10.0.2.15
+- /24 means mask 255.255.255.0
+- Corresponding network: 10.0.2.0/24
+- Broadcast address: 10.0.2.255
+- In the common /24 interpretation, addresses 10.0.2.1 through 10.0.2.254 are host addresses; whether a given address is usable/reachable depends on the network configuration.
+- 10.0.2.15 is a typical VirtualBox NAT guest address. Do not assume every VM with a 10.0.2.x address can reach every other VM.
+
+2. SYSMON
+
+View logs
+Event Viewer >
+Applications and Services Logs >
+Microsoft > Windows > Sysmon > Operational
+
+Useful event IDs (availability depends on configuration)
+- 1: Process creation
+- 2: A process changed a file creation time
+- 3: Network connection (may be disabled by the active configuration)
+- 5: Process termination
+- 6: Driver loaded
+- 7: Image/DLL loaded (can be very high volume and may be disabled)
+- 8: CreateRemoteThread
+- 10: Process access
+- 11: FileCreate
+- 12–14: Registry object create/delete, value set, and rename-related events
+- 22: DNS query
+- 23: File deletion archived (configuration-dependent)
+
+Interpretation
+- Event ID 1 can help investigate which process started and with what command line.
+- Event ID 3 can provide process-associated network connection information if enabled.
+- Event ID 22 can show DNS queries if enabled.
+- Missing events do not prove activity did not occur; the event may be excluded by configuration or logs may have rolled over.
+
+3. THEHARVESTER
+
+    theHarvester -d tesla.com -b hackertarget
+
+Useful commands
+    theHarvester -h
+    theHarvester -d example.com -b hackertarget
+    theHarvester -d example.com -b crtsh
+    theHarvester -d example.com -b hackertarget -l 100
+    theHarvester -h
+
+4. NETDISCOVER
+
+    netdiscover -h
+    sudo netdiscover -i eth0 -r 192.168.56.0/24
+    sudo netdiscover -i eth0 -r 10.0.2.0/24
+    sudo netdiscover -p
+
+5. GOOGLE DORKING
+
+Useful operators
+- `site:example.com`: limit results to a domain.
+- `filetype:pdf`: restrict to a file type.
+- `intitle:terms`: match words in a page title.
+- `inurl:terms`: match words in a URL.
+- `intext:terms`: match words in page text.
+- Quoted phrase `"exact phrase"`: search for that phrase.
+- Minus sign `-term`: exclude a term.
+- `OR`: match either expression.
+
+6. FOCA
+
+Basic workflow
+1. Open FOCA.
+2. Create a project for a permitted domain.
+3. Search for public documents using available search-engine integrations.
+4. Download selected public documents if necessary.
+5. Extract/analyse metadata.
+6. Review findings and distinguish genuine metadata from assumptions.
+
+7. WHOIS
+
+    whois mit.edu
+
+What to read
+- Domain name.
+- Registry/registrar or sponsoring organisation.
+- Registrant/organisation if disclosed.
+- Name servers.
+- Creation, update, and expiration dates where supplied.
+- Referral or WHOIS server information.
+
+8. NSLOOKUP
+
+Commands
+    nslookup mit.edu
+    nslookup -type=NS mit.edu
+    nslookup -type=MX mit.edu
+    nslookup -type=TXT mit.edu
+    nslookup mit.edu 1.1.1.1
+
+Interpretation
+- `A` record: IPv4 address.
+- `AAAA` record: IPv6 address.
+- `MX`: mail exchanger.
+- `NS`: authoritative name-server names.
+- `TXT`: arbitrary text records.
+- “Non-authoritative answer” is normal when a recursive resolver returns cached/recursive results rather than answering as the domain's authoritative server.
+
+9. SUBLIST3R
+
+    sublist3r -h
+    sublist3r -d example.com
+    sublist3r -d example.com -o subdomains.txt
+    sublist3r -d example.com -e google,bing
+
+Difference from theHarvester
+- Both can gather OSINT and subdomains.
+- theHarvester gathers several kinds of public information from supported sources.
+- Sublist3r focuses on subdomain enumeration.
+
+10. MALTEGO
+
+1. Open Maltego and create a new graph.
+2. Add a Domain entity for a permitted practice domain.
+3. Set its value.
+4. Right-click the domain entity.
+5. Choose Run Transforms or the corresponding Transform menu.
+6. Search for available DNS-related Transforms, such as domain-to-IP, domain-to-nameserver, domain-to-MX, or subdomain discovery.
+7. Inspect the returned nodes and edges.
+
+Install a Transform
+- Open Transform Hub.
+- Locate a relevant package (for example, standard DNS/OSINT Transforms if available).
+- Click Install and follow the prompts.
+- Configure any required API keys/accounts.
+- Return to the graph and run the Transform.
+
+12. NMAP
+
+    nmap 127.0.0.1
+    nmap -sV 127.0.0.1
+    nmap -p 22,80,443 127.0.0.1
+    nmap -sn 192.168.56.0/24
+    nmap -oN scan.txt 127.0.0.1
+    sudo nmap -sT -sV 127.0.0.1
+
+Flags
+- `-sV`: service/version detection.
+- `-sT`: TCP connect scan.
+- `-sS`: TCP SYN scan; typically requires elevated privileges.
+- `-O`: attempt OS detection.
+- `-p`: select ports.
+- `-sn`: host discovery without port scanning.
+- `-oN`: save normal text output.
+- `-A`: enables multiple advanced detection features; use only on authorised targets.
+
+13. NESSUS
+
+- Start service if the installed package provides `nessusd`:
+      sudo systemctl start nessusd
+      sudo systemctl status nessusd
+- Open:
+      https://localhost:8834/
+- Complete the local setup and activation steps for the available edition/license.
+
+Basic GUI workflow
+1. Open Nessus at the local URL.
+2. Complete initial setup and activation.
+3. Create a new scan.
+4. Choose Basic Network Scan or the scan type specified by the instructor.
+5. Enter only an authorised target.
+6. Configure and launch the scan.
+7. Review findings and evidence.
+8. Read remediation guidance and prepare a concise report.
+
+Severity
+- Critical: highest priority, potentially severe impact.
+- High: significant risk.
+- Medium: moderate risk.
+- Low: lower risk.
+- Informational: observation that may not be a vulnerability.
+
+14. WIRESHARK
+
+GUI workflow
+1. Launch Wireshark.
+2. Choose the active interface, commonly `eth0`, or the interface carrying your traffic.
+3. Start capture.
+4. Generate traffic, e.g.:
+       nslookup mit.edu
+5. Observe packets in the packet list.
+6. Use display filters.
+7. Stop capture after a short, controlled test.
+8. Select a packet and inspect Packet Details and Packet Bytes.
+
+Useful display filters
+    dns
+    tcp
+    udp
+    http
+    icmp
+    tcp.port == 80
+    udp.port == 53
+
+Capture vs display filter
+- Capture filter: controls which packets are collected, e.g. `port 53`.
+- Display filter: selects packets from an existing capture, e.g. `dns`.
+The syntax is different.
+
+16. ARMITAGE — EXPANDED PRACTICAL WORKFLOW
+
+A. Check whether Armitage/Metasploit exists
+    which armitage
+    msfconsole --version
+If Armitage is available, service/database setup may require:
+    sudo systemctl start postgresql
+    sudo msfdb init
+Then:
+    armitage
+
+B. Find the Metasploitable target IP
+On Metasploitable 2:
+    ifconfig
+or:
+    ip addr
+
+Write down the IPv4 address for the interface attached to the lab network.
+
+C. Verify connectivity from Kali
+    ip -br addr
+    ip route
+    ping -c 3 TARGET_IP
+
+D. Discover hosts
+In Armitage:
+1. Use Hosts > Nmap Scan > Quick Scan (menu wording can vary).
+2. Enter the authorised target IP for a single host, or the correct lab subnet if you are instructed to discover the lab network.
+3. Wait for the scan to finish.
+4. Hosts discovered by the scan may appear as computer icons in the top workspace.
+5. An icon indicates discovery, not vulnerability or compromise.
+
+E. Inspect scan output
+1. Click the bottom `nmap` tab to view raw scan output.
+2. Read the target address and open/closed/filtered ports.
+3. For service versions, run an authorised service detection scan in the terminal if necessary:
+       nmap -sV TARGET_IP
+4. Compare the result with the host icon and any service information shown in Armitage.
+
+F. Inspect Services
+The bottom Services tab is a table/database view, commonly with columns like:
+    host | name | port | proto | info
+
+If empty:
+1. Confirm the scan actually finished.
+2. Read the `nmap` tab for open ports.
+3. Check whether the scan was an Nmap host/service scan or a Metasploit auxiliary port-scan module.
+4. A Metasploit auxiliary scan may display output without automatically populating Armitage's Services database.
+5. If the target has no reachable services, there may be no service rows.
+6. Check connectivity and database connection if the problem persists.
+
+G. Find Attacks — conceptual flow
+1. Right-click a discovered host.
+2. Choose Find Attacks if that option is available in the version.
+3. Armitage may identify potentially relevant modules based on the information it has. Behaviour/menu labels vary by version and available scan data.
+4. Treat results as candidates, not proof of vulnerability.
+5. Check the service and version evidence before deciding whether any module is relevant.
+
+H. Understand the left-hand module browser
+- Auxiliary: scanners, enumeration, and supporting checks.
+- Exploit: modules that target specific vulnerabilities.
+- Payload: code/action configured with an exploit.
+- Post: modules intended for use after a session is established.
+
+I. Configure and run a module — safe principles
+Module options may include:
+- RHOSTS: target host(s).
+- RPORT: target port.
+- Other module-specific settings.
+A target address must be the authorised lab machine. Running a module does not guarantee success. Prefer non-disruptive checks and follow the lab worksheet. Exploit execution and payload use should be limited to explicitly authorised, isolated lab exercises.
+
+J. Hail Mary
+
